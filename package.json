@@ -1,0 +1,25 @@
+{
+  "name": "employee-tracker-sinzostyle",
+  "version": "1.0.0",
+  "description": "CMS interface for employees",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MrSinzo/Employee-Tracker-SinzoStyle.git"
+  },
+  "author": "Mrsinzo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MrSinzo/Employee-Tracker-SinzoStyle/issues"
+  },
+  "homepage": "https://github.com/MrSinzo/Employee-Tracker-SinzoStyle#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^8.2.4",
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.27.0"
+  }
+}
