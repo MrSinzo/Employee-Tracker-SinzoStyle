@@ -4,6 +4,9 @@ const cTable = require("console.table");
 const mysql = require("mysql2");
 const Employee = require("./lib/Employee");
 const Roles = require("./lib/Roles");
+// const { QueryInterface } = require("sequelize");
+// const { UPDATE } = require("sequelize/types/query-types");
+/** line 7 and 8Came out of no where */
 // const SchemaFuncs = require('./db/SchemaFuncs')
 
 const db = mysql.createConnection(
@@ -44,21 +47,19 @@ function start() {
       } else if (response.start == "Add Employee") {
         addEmpl();
       } else if (response.start == "Update Employee Role") {
-        // sql read and add?
+        updateEmp();
       } else if (response.start == "View all roles") {
-        viewRoles()
+        viewRoles();
         start();
       } else if (response.start == "Add Role") {
         //sql add function to table?
       } else if (response.start == "View All Departments") {
-        viewDeps()
+        viewDeps();
         start();
       } else if (response.start == "Add Department") {
         //sql add function to table?
       } else {
-        db.query("EXIT", function (err, results) {
-          console.table(results);
-        });
+        quit(); /** I need help with this method */
       }
     });
 }
@@ -70,6 +71,7 @@ function addEmpl() {
         type: "input",
         name: "empId",
         message: "What is the new Employee's ID number?",
+        default: 25,
       },
       {
         type: "input",
@@ -86,14 +88,20 @@ function addEmpl() {
       },
       {
         type: "list",
-        name: "empRole",
+        name: "empRoleId",
         message: "What is the new Employee's Role?",
         choices: [
-          "Food Vendor",
-          "Ammo Vendor",
-          "Armor Vendor",
-          "Weapons Vendor",
+          1,
+          2,
+          3,
+          4,
         ],
+      },
+      {
+        type: "list",
+        name: "empManagerName",
+        message: "Who is the new Employees Manager?",
+        choices: [1, 2, 3, 4],
       },
     ])
     .then((response) => {
@@ -101,25 +109,35 @@ function addEmpl() {
         response.empId,
         response.empFirst_Name,
         response.empLast_Name,
-        response.empRoleId
+        response.empRoleId,
+        response.empManagerName
       );
+      newEmp.push(employee);
       console.log(employee.empId);
       console.log(employee.empFirst_Name);
       console.log(employee.empLast_Name);
-        db.query(
-          "INSERT INTO employee (first_Name, last_Name) VALUES (" +
-            `${employee.getFirstName()}` +
-            "),(" +
-            `${employee.getLastName()}` +
-            ")",
-          function (err, results) {
-            if (err) {
-              console.log(err)
-            }
-            console.log(results);
-            console.table(results);
+      console.log(employee.empRoleId);
+      console.log(employee.empManagerName);
+      db.query(
+        "INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES (" +
+          `${employee.getEmplId()}` +
+          "," +
+          `${employee.getFirstName()}` +
+          "," +
+          `${employee.getLastName()}` +
+          "," +
+          `${employee.getRoleID()}` +
+          "," +
+          `${employee.getManagerName()}` +
+          ")",
+        function (err, results) {
+          if (err) {
+            console.log(err);
           }
-        );
+          console.log(results);
+          console.table(results);
+        }
+      );
     });
 }
 
@@ -128,17 +146,17 @@ function viewEmps() {
     if (err) {
       console.log(err);
     } else {
-      console.table(results);
+      return console.table(results);
     }
   });
 }
 
 function viewDeps() {
-  db.query("SELECT * FROM departments", function (err, results) {
+  db.query("SELECT * FROM department", function (err, results) {
     if (err) {
       console.log(err);
     } else {
-      console.table(results);
+      return console.table(results);
     }
   });
 }
@@ -148,10 +166,17 @@ function viewRoles() {
     if (err) {
       console.log(err);
     } else {
-      console.table(results);
+      return console.table(results);
     }
   });
 }
+
+function quit() {
+  db.query("exit;", function (err, results) {
+    console.table(results);
+  });
+}
+
 // function getRandomInt() {
 //   let rngNum = Math.floor(Math.random() * 999);
 //   console.log(rngNum);

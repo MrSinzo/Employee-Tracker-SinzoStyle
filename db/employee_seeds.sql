@@ -4,7 +4,7 @@ VALUES (1, "Jake", "Hornady", 1),
        (3, "Vulcan", "Ironsides", 0),
        (4, "Jason", "Borne", 1);
 
--- SELECT * FROM employee
+SELECT * FROM employee
 
 -- INSERT INTO employee ( id, first_name, last_name, role_id, manager_id)
 -- VALUES (1, "Jake", "Hornady", 546, 1),
