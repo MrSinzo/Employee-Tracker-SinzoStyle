@@ -1,17 +1,18 @@
 /**To do still;
- * update employee role function 
- * get video walkthrough 
+ * fill out readme
+ * get video walkthrough
  * */
-/**Note didnt use bower install console.table ask about this in class */
+/**Note didnt use bower install console.table ask about this in class*/
 const inquirer = require("inquirer");
 const cTable = require("console.table");
 const mysql = require("mysql2");
+// const Department = require("./lib/Department");
 // const Employee = require("./lib/Employee");
 // const Department = require("./lib/Department");
 // const Roles = require("./lib/Roles"); // not in use yet
 // const { QueryInterface } = require("sequelize");
 // const { UPDATE } = require("sequelize/types/query-types");
-/** line 7 and 8 Came out of no where */
+/** const { QueryInterface } and const { UPDATE } Came out of no where */
 
 const db = mysql.createConnection(
   {
@@ -34,27 +35,48 @@ function mainMenu() {
         name: "mainMenu",
         message: "What would you like to do?",
         choices: [
+          "View Managers",
           "View All Employees",
           "Add Employee",
-          "Delete Employee",
+          "Remove Employee",
           "Update Employee Role",
           "View All Roles",
           "Add Role",
           "Remove a Role",
           "View All Departments",
           "Add Department",
+          "Remove Department",
           "Quit",
         ],
       },
     ])
     .then((response) => {
-      if (response.mainMenu == "View All Employees") {
+      if (response.mainMenu == "View Managers") {
+        viewMangers();
+      } else if (response.mainMenu == "View All Employees") {
         viewEmps();
-        // mainMenu();
       } else if (response.mainMenu == "Add Employee") {
+        db.query("SELECT id, title FROM roles", (err, result) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("\n \nRoles List \n"), console.table(result);
+          }
+        });
+        db.query(
+          "SELECT * FROM employee where manager_id != 0",
+          (err, result) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("Manager List \n ");
+              console.table(result);
+              console.log("Type A Name....");
+            }
+          }
+        );
         addEmpl();
-      } else if (response.mainMenu == "Delete Employee") {
-        // removeEmpLogic();
+      } else if (response.mainMenu == "Remove Employee") {
         let myQuery = db.query(
           "SELECT id, first_name, last_name FROM employee",
           function (err, result) {
@@ -62,7 +84,6 @@ function mainMenu() {
               console.log(err);
             } else {
               myQuery = result;
-              // console.log(myQuery);
               console.log("\n");
               console.table(myQuery);
             }
@@ -70,17 +91,41 @@ function mainMenu() {
         );
         removeEmp();
       } else if (response.mainMenu == "Update Employee Role") {
-        updateEmp(); // not sure how to do this one yet
+        db.query("SELECT * FROM employee", function (err, results) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("\n\nEmployee List\n");
+            console.table(results);
+          }
+        });
+        db.query("SELECT * FROM roles", function (err, results) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("\nRoles List\n");
+            console.table(results);
+          }
+        });
+        updateEmp();
       } else if (response.mainMenu == "View All Roles") {
         viewRoles();
       } else if (response.mainMenu == "Add Role") {
+        db.query("SELECT * FROM department", function (err, results) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("\nDepartment table successfully accessed\n");
+            console.table(results);
+          }
+        });
         addRole();
       } else if (response.mainMenu == "Remove a Role") {
         db.query("SELECT * FROM roles", function (err, results) {
           if (err) {
             console.log(err);
           } else {
-            console.log("\nRole table successfully accessed\n");
+            console.log("\nRoles List : \n");
             console.table(results);
           }
         });
@@ -89,8 +134,18 @@ function mainMenu() {
         viewDeps();
       } else if (response.mainMenu == "Add Department") {
         addDeps();
+      } else if (response.mainMenu == "Remove Department") {
+        db.query("SELECT * FROM department", function (err, results) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("\n\nDepartment List : \n");
+            console.table(results);
+          }
+        });
+        removeDep();
       } else {
-        // quit(); /** I need help with this method */
+        console.log("\n Please Hold Ctrl+C to quit \n");
       }
     });
 }
@@ -111,39 +166,29 @@ function addEmpl() {
         default: "Johns",
       },
       {
-        type: "list",
+        type: "input",
         name: "empRoleId",
-        message: "What is the new Employee's Role?",
-        choices: [1, 2, 3, 4],
+        message:
+          "What is the new Employee's Role? \n (choose respective ID # correlating to the Role List)",
       },
       {
-        type: "list",
-        name: "empManagerName",
-        message: "Who is the new Employees Manager?",
-        choices: [1, 2, 3, 4],
+        type: "input",
+        name: "empManagersId",
+        message:
+          "Does This new Employee have a Manager? \n (choose respective ID # correlating to the Manager List to select a Manager, or type null for No Manager)",
       },
     ])
     .then((response) => {
-      //dont need any of this, but keep just in case
-      // let employee = new Employee(
-      //   response.empId,
-      //   response.empFirst_Name,
-      //   response.empLast_Name,
-      //   response.empRoleId,
-      //   response.empManagerName
-      // );
-      // newEmp.push(employee); // pushes new Employee to newEmp array
-      // console.log(employee.empFirst_Name);
-      // console.log(employee.empLast_Name);
-      // console.log(employee.empRoleId);
-      // console.log(employee.empManagerName);
+      if (response.empManagersId == "null") {
+        response.empManagersId = null;
+      }
       db.query(
         "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)",
         [
           response.empFirst_Name,
           response.empLast_Name,
           response.empRoleId,
-          response.empManagerName,
+          response.empManagersId,
         ]
       );
       console.log(
@@ -157,6 +202,32 @@ function addEmpl() {
     });
 }
 
+function updateEmp() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "empChoice",
+        message:
+          "Which Employee would you like to assign a new Role to? \n (choose respective ID # correlating to the Employee List)",
+      },
+      {
+        type: "input",
+        name: "empRoleUpdate",
+        message:
+          "Which Role would you like to assign the Employee to? \n (choose respective ID # correlating to the Roles List)",
+      },
+    ])
+    .then((response) => {
+      db.query("UPDATE employee SET role_id = ? WHERE id = ? ", [
+        response.empRoleUpdate,
+        response.empChoice,
+      ]);
+      console.log("\n Updated the Employee role!!");
+      mainMenu();
+    });
+}
+
 function addRole() {
   inquirer
     .prompt([
@@ -164,7 +235,7 @@ function addRole() {
         type: "input",
         name: "roleTitle",
         message: "What is the name of the new Role?",
-        default: "Power Armorer",
+        default: "Power Armor Mechanic",
       },
       {
         type: "input",
@@ -172,13 +243,19 @@ function addRole() {
         message: "What is the Salary of the new Role?",
         default: "26.99",
       },
+      {
+        type: "input",
+        name: "roleDep",
+        message:
+          "What Department does this role belong too? \n (choose respective ID # correlating to the Department)",
+      },
     ])
     .then((response) => {
-      db.query("INSERT INTO roles (title, salary) VALUES (?,?)", [
-        response.roleTitle,
-        response.roleSalary,
-      ]);
-      console.log(response.roleTitle + "Has been added to the Roles table");
+      db.query(
+        "INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)",
+        [response.roleTitle, response.roleSalary, response.roleDep]
+      );
+      console.log(response.roleTitle + " Has been added to the Roles table");
       mainMenu();
     });
 }
@@ -199,11 +276,27 @@ function addDeps() {
         "INSERT INTO department (department_name) VALUES (?)",
         newDep
       );
-      console.log("line 184");
-      console.log(response.newDep);
+      console.log(
+        "\n" + response.newDep + " Has been added to the Department table"
+      );
       mainMenu();
     })
     .catch((err) => console.log(err));
+}
+
+function viewMangers() {
+  db.query(
+    "SELECT first_name, last_name, manager_id FROM employee WHERE manager_id != 'null'",
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("\nHere is a list of the Managers\n");
+        console.table(result);
+        mainMenu();
+      }
+    }
+  );
 }
 
 function viewEmps() {
@@ -276,9 +369,44 @@ function removeRoles() {
     });
 }
 
-// not working // will want this to work
-// function quit() {
-//   db.query("exit;", function (err, results) {
-//     console.table(results);
-//   });
+function removeDep() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "destroyDep",
+        message:
+          "Which Department would you like to delete? \n (choose respective ID # correlating to the Department)",
+      },
+    ])
+    .then((response) => {
+      let dep2Delete = response.destroyDep;
+      db.query("DELETE FROM department WHERE id = (?)", [response.destroyDep]);
+      console.log(" \n Deleted " + dep2Delete + " From table \n ");
+      mainMenu();
+    });
+}
+
+// /**Type 1 not working */
+// function listDepart(){
+//   db.query("SELECT department_name FROM department", async (err, result) => {
+//     if (err) {
+//       console.log(err)
+//     } else {
+//       console.table(result)
+//       result.forEach();
+//     }
+//   }).then((response) => {
+//     const depoList = new Department(
+//       response.result[i]
+//     );
+//     newDepo.push(depoList)
+//     for(let i = 0 ; i < newDepo.length; i++) {
+//       let seperator = ",";
+//       newDepo[i] += seperator
+//       console.log(newDepo[i])
+//     }
+//   })
 // }
+
+// UPDATE employee SET role_id = 4 WHERE id =4;
