@@ -3,11 +3,12 @@ const inquirer = require("inquirer");
 const cTable = require("console.table");
 const mysql = require("mysql2");
 const Employee = require("./lib/Employee");
-const Department = require("./lib/Department");
-// const Roles = require("./lib/Roles"); // not in use yet
+const Department = require("./lib/Department")
+const Roles = require("./lib/Roles");
 // const { QueryInterface } = require("sequelize");
 // const { UPDATE } = require("sequelize/types/query-types");
 /** line 7 and 8 Came out of no where */
+// const SchemaFuncs = require('./db/SchemaFuncs')
 
 const db = mysql.createConnection(
   {
@@ -43,24 +44,27 @@ function mainMenu() {
     ])
     .then((response) => {
       if (response.mainMenu == "View All Employees") {
+
         viewEmps();
-        // mainMenu();
+        mainMenu();
       } else if (response.mainMenu == "Add Employee") {
         addEmpl();
       } else if (response.mainMenu == "Delete Employee") {
-        removeEmp();
+        removeEmp()
       } else if (response.mainMenu == "Update Employee Role") {
-        updateEmp(); // not sure how to do this one yet
+        updateEmp();
       } else if (response.mainMenu == "View all roles") {
         viewRoles();
+        mainMenu();
       } else if (response.mainMenu == "Add Role") {
         addRole();
       } else if (response.mainMenu == "View All Departments") {
         viewDeps();
+        mainMenu();
       } else if (response.mainMenu == "Add Department") {
-        addDep();
+        addDep()
       } else {
-        // quit(); /** I need help with this method */
+        quit(); /** I need help with this method */
       }
     });
 }
@@ -85,7 +89,12 @@ function addEmpl() {
         type: "list",
         name: "empRoleId",
         message: "What is the new Employee's Role?",
-        choices: [1, 2, 3, 4],
+        choices: [
+          1,
+          2,
+          3,
+          4,
+        ],
       },
       {
         type: "list",
@@ -108,51 +117,47 @@ function addEmpl() {
       console.log(employee.empRoleId);
       console.log(employee.empManagerName);
       db.query(
-        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)",
-        [
-          response.empFirst_Name,
-          response.empLast_Name,
-          response.empRoleId,
-          response.empManagerName,
-        ]
-      );
-    });
-}
-
-function addRole() {
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "roleTitle",
-        message: "What is the name of the new Role?",
-        default: "Power Armorer",
-      },
-      {
-        type: "input",
-        name: "roleSalary",
-        message: "What is the Salary of the new Role?",
-        default: "26.99",
-      },
-    ])
-    .then(/*not done yet*/);
-}
-
-function addDep() {
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "newDep",
-        message: "What is the name of the new Role?",
-        default: "Power Armor Station",
-      },
-    ])
-    .then((response) => {
-      let department = new Department(response.newDep);
-      db.query("INSERT INTO department (name) VALUES (?)", [response.newDep]);
+        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)", [response.empFirst_Name, response.empLast_Name, response.empRoleId, response.empManagerName]);
       mainMenu();
-    });
+  })
+      
+}
+
+function addRole(){
+  inquirer.prompt ([
+    {
+      type: "input",
+      name: "roleTitle",
+      message: "What is the name of the new Role?", 
+      default: "Power Armorer"
+    },
+    {
+      type: "input",
+      name: "roleSalary",
+      message: "What is the Salary of the new Role?", 
+      default: "26.99"
+    }
+  ])
+  .then()
+}
+
+function addDep(){
+  inquirer.prompt ([
+    {
+      type: "input",
+      name: "newDep",
+      message: "What is the name of the new Role?", 
+      default: "Power Armor Station"
+    }
+  ])
+  .then((response) => {
+    let department = new Department(
+      response.newDep
+    );
+    db.query(
+      "INSERT INTO department (name) VALUES (?)", [response.newDep]);
+    mainMenu();
+  })
 }
 
 function viewEmps() {
@@ -160,9 +165,7 @@ function viewEmps() {
     if (err) {
       console.log(err);
     } else {
-      console.log("\nEmployee table successfully accessed\n");
-      console.table(results);
-      mainMenu();
+      return console.table(results);
     }
   });
 }
@@ -172,9 +175,7 @@ function viewDeps() {
     if (err) {
       console.log(err);
     } else {
-      console.log("\nDepartment table successfully accessed\n");
-      console.table(results);
-      mainMenu();
+      return console.table(results);
     }
   });
 }
@@ -184,61 +185,43 @@ function viewRoles() {
     if (err) {
       console.log(err);
     } else {
-      console.log("\nRole table successfully accessed\n");
-      console.table(results);
-      mainMenu();
+      return console.table(results);
     }
   });
 }
 
-function removeEmp() { 
-  removeEmpLogic()
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "removeEmp",
-        message: "Which Employee would you like to remove(input an ID #)?",
-      },
-    ])
-    .then((response) => {
-      let name2Delete = response.removeEmp;
-      db.query("DELETE FROM employee WHERE id = (?)", [response.removeEmp]);
-      console.log("Deleted " + name2Delete + " From table");
-      mainMenu();
-    });
-  // Object.values(JSON.parse(JSON.stringify(result)))
-  // console.log(result);
-  // console.log(result[i]);
-}
 
-function removeEmpLogic() {
-  let myQuery = db.query(
-    "SELECT id, first_name, last_name FROM employee",
-    function (err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        myQuery = result;
-        console.log(myQuery);
-        console.table(result);
-      }
+
+function removeEmp(){
+  inquirer.prompt([
+    {
+      type: "list",
+      name: "newDep",
+      message: "Which Employee would you like to remove?", 
+      choices: [db.database.employee.empFirst_Name]
     }
-  );
+  ])
+  let deleteFrom = db.query("DELETE FROM employee WHERE first_name = (?)", [response.empFirst_Name] )
+  console.log("Deleted" + response.empFirst_Name + "From table")
+  return deleteFrom;
 }
 
-// not working // will want this to work
-// function quit() {
-//   db.query("exit;", function (err, results) {
-//     console.table(results);
-//   });
-// }
+
+
+function quit() {
+  db.query("exit;", function (err, results) {
+    console.table(results);
+  });
+}
+
+
 
 // function getRandomInt() {
 //   let rngNum = Math.floor(Math.random() * 999);
 //   console.log(rngNum);
 //   return rngNum;
 // }
+
 
 // db.query(
 //   "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (" +
@@ -260,42 +243,3 @@ function removeEmpLogic() {
 //     console.table(results);
 //   }
 // );
-
-/**other set up  */
-// function removeEmp() {
-//   db.query(
-//     "SELECT first_name, last_name FROM employee",
-//     function (err, result) {
-//       if (err) {
-//         console.log(err);
-//       } else {
-//         then((result) => {
-//           console.log("\n ");
-//           for (i = 0; i < result.length; i++) {
-//             console.log("loop ran");
-
-//           }
-//         },
-//         inquirer
-//         .prompt([
-//           {
-//             type: "list",
-//             name: "removeEmp",
-//             message: "Which Employee would you like to remove?",
-//             choices: [empDb[i]],
-//           },
-//         ])
-//         .then((response) => {
-
-//           db.query("DELETE FROM employee WHERE first_name = (?)", [name2Delete]);
-//           console.log("Deleted" + name2Delete + "From table");
-//         })
-//         );
-//         // Object.values(JSON.parse(JSON.stringify(result)))
-//         // console.log(result);
-//         console.log(result[i]);
-//       }
-//     }
-//   );
-
-// }
