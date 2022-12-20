@@ -4,7 +4,7 @@ CREATE DATABASE myStore_db;
 USE myStore_db;
 
 CREATE TABLE department (
-    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     name VARCHAR(30) NOT NULL
 );
 
@@ -26,6 +26,3 @@ CREATE TABLE employee (
     FOREIGN KEY (role_id)
     REFERENCES role(id)
 );
-
-
-

@@ -19,7 +19,8 @@ const db = mysql.createConnection(
   console.log(`Connected to the myStore_db database.`)
 );
 
-let newEmp = [];
+// let newEmp = [];
+// let newDepo = [];
 mainMenu();
 function mainMenu() {
   inquirer
@@ -33,7 +34,7 @@ function mainMenu() {
           "Add Employee",
           "Delete Employee",
           "Update Employee Role",
-          "View all roles",
+          "View All Roles",
           "Add Role",
           "View All Departments",
           "Add Department",
@@ -48,10 +49,24 @@ function mainMenu() {
       } else if (response.mainMenu == "Add Employee") {
         addEmpl();
       } else if (response.mainMenu == "Delete Employee") {
+        // removeEmpLogic();
+        let myQuery = db.query(
+          "SELECT id, first_name, last_name FROM employee",
+          function (err, result) {
+            if (err) {
+              console.log(err);
+            } else {
+              myQuery = result;
+              // console.log(myQuery);
+              console.log("\n");
+              console.table(myQuery);
+            }
+          }
+        );
         removeEmp();
       } else if (response.mainMenu == "Update Employee Role") {
         updateEmp(); // not sure how to do this one yet
-      } else if (response.mainMenu == "View all roles") {
+      } else if (response.mainMenu == "View All Roles") {
         viewRoles();
       } else if (response.mainMenu == "Add Role") {
         addRole();
@@ -74,7 +89,6 @@ function addEmpl() {
         message: "What is the new Employee's First name?",
         default: "Jimmy",
       },
-
       {
         type: "input",
         name: "empLast_Name",
@@ -95,18 +109,19 @@ function addEmpl() {
       },
     ])
     .then((response) => {
-      let employee = new Employee(
-        response.empId,
-        response.empFirst_Name,
-        response.empLast_Name,
-        response.empRoleId,
-        response.empManagerName
-      );
-      newEmp.push(employee); // pushes new Employee to newEmp array
-      console.log(employee.empFirst_Name);
-      console.log(employee.empLast_Name);
-      console.log(employee.empRoleId);
-      console.log(employee.empManagerName);
+      //dont need any of this, but keep just in case
+      // let employee = new Employee(
+      //   response.empId,
+      //   response.empFirst_Name,
+      //   response.empLast_Name,
+      //   response.empRoleId,
+      //   response.empManagerName
+      // );
+      // newEmp.push(employee); // pushes new Employee to newEmp array
+      // console.log(employee.empFirst_Name);
+      // console.log(employee.empLast_Name);
+      // console.log(employee.empRoleId);
+      // console.log(employee.empManagerName);
       db.query(
         "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)",
         [
@@ -116,6 +131,14 @@ function addEmpl() {
           response.empManagerName,
         ]
       );
+      console.log(
+        "Added " +
+          response.empFirst_Name +
+          " " +
+          response.empLast_Name +
+          " to Table"
+      );
+      mainMenu();
     });
 }
 
@@ -135,25 +158,74 @@ function addRole() {
         default: "26.99",
       },
     ])
-    .then(/*not done yet*/);
+    .then((response) => {
+      db.query("INSERT INTO role (title, salary, department_id) VALUES (?,?)", [
+        response.roleTitle,
+        response.roleSalary,
+      ]);
+      console.log(response.roleTitle + "Has been added to thr Role table");
+      mainMenu();
+    });
 }
-
+/**test out # 2 */
 function addDep() {
   inquirer
     .prompt([
       {
         type: "input",
         name: "newDep",
-        message: "What is the name of the new Role?",
-        default: "Power Armor Station",
+        message: "What is the new department?",
       },
     ])
     .then((response) => {
-      let department = new Department(response.newDep);
-      db.query("INSERT INTO department (name) VALUES (?)", [response.newDep]);
+      let newDep = response.newDep
+
+      db.promise().query("INSERT INTO department VALUES (?)", newDep);
+      console.log(response.newDep);
       mainMenu();
-    });
+    }).catch((err) => console.log(err));
 }
+
+
+/**test out */
+// function addDep() {
+//   inquirer
+//     .prompt([
+//       {
+//         type: "input",
+//         name: "newDep",
+//         message: "What is the new department?",
+//       },
+//     ])
+//     .then((response) => {
+//       db.promise().query("INSERT INTO department SET ?", [response.newDep]);
+//       console.log(response.newDep);
+//       mainMenu();
+//     });
+// }
+/** original */
+// function addDep() {
+//   inquirer
+//     .prompt([
+//       {
+//         type: "input",
+//         name: "newDep",
+//         message: "What is the name of the new Department?",
+//         default: "Power Armor Station",
+//       },
+//     ])
+//     .then((response) => {
+//       // let nDepart = new Department(response.newDep);
+//       // newDepo.push(nDepart);
+//       console.log(response)
+//       db.query("INSERT INTO department (name) VALUES (?)", response.newDep );
+//       // // console.log(depResponse.newDep);
+//       // console.log(
+//       //   "\n " + response.newDep + " Has been added to the Department table \n "
+//       // );
+//       // mainMenu();
+//     });
+// }
 
 function viewEmps() {
   db.query("SELECT * FROM employee", function (err, results) {
@@ -191,8 +263,8 @@ function viewRoles() {
   });
 }
 
-function removeEmp() { 
-  removeEmpLogic()
+function removeEmp() {
+  // removeEmpLogic()
   inquirer
     .prompt([
       {
@@ -204,7 +276,7 @@ function removeEmp() {
     .then((response) => {
       let name2Delete = response.removeEmp;
       db.query("DELETE FROM employee WHERE id = (?)", [response.removeEmp]);
-      console.log("Deleted " + name2Delete + " From table");
+      console.log(" \n Deleted " + name2Delete + " From table \n ");
       mainMenu();
     });
   // Object.values(JSON.parse(JSON.stringify(result)))
@@ -212,20 +284,21 @@ function removeEmp() {
   // console.log(result[i]);
 }
 
-function removeEmpLogic() {
-  let myQuery = db.query(
-    "SELECT id, first_name, last_name FROM employee",
-    function (err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        myQuery = result;
-        console.log(myQuery);
-        console.table(result);
-      }
-    }
-  );
-}
+// function removeEmpLogic() {
+//   let myQuery = db.query(
+//     "SELECT id, first_name, last_name FROM employee",
+//     function (err, result) {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         myQuery = result;
+//         // console.log(myQuery);
+//         console.log("\n");
+//         console.table(myQuery);
+//       }
+//     }
+//   );
+// }
 
 // not working // will want this to work
 // function quit() {
