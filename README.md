@@ -32,11 +32,10 @@ I wanted to make a quick application that could make performing queries ( and mo
 There was A LOT of javascript involved, Mysql2 package, Inquirer (@8.2.4 version) an sequlize. This application is only served through the backend!
 
 ## Screenshot of working application and Video Walkthrough
-![ScreenShot of Deplyed Application](/.png)
+![ScreenShot of Deplyed Application](/HMWK12-Screenshot.png)
 
 Video Walkthrough link below!
-
-
+https://drive.google.com/file/d/1WmfDByTKtB6K8rDYP8qkvBgUSaWtM4hG/view?usp=share_link
 ## Credits and Licenses
 Using MIT License [Check it here!](https://opensource.org/licenses/MIT)
 

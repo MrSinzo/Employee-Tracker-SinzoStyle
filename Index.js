@@ -115,7 +115,7 @@ function mainMenu() {
           if (err) {
             console.log(err);
           } else {
-            console.log("\nDepartment table successfully accessed\n");
+            console.log("\n\nDepartment List\n");
             console.table(results);
           }
         });
@@ -247,7 +247,7 @@ function addRole() {
         type: "input",
         name: "roleDep",
         message:
-          "What Department does this role belong too? \n (choose respective ID # correlating to the Department)",
+          "What Department does this role belong too? \n (choose respective ID # correlating to the Department List)",
       },
     ])
     .then((response) => {
